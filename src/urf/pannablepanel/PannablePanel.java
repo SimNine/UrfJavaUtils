@@ -23,7 +23,7 @@ public class PannablePanel extends JPanel {
 	protected int yMouseDown = 0;
 	protected boolean mousePressed = false;
 	
-	public PannablePanel(int width, int height) {
+	public PannablePanel(int width, int height, boolean rerenderOnMove) {
 		super();
 		super.setFocusable(true);
 		super.requestFocusInWindow();
@@ -33,6 +33,9 @@ public class PannablePanel extends JPanel {
 			public void mouseDragged(MouseEvent e) {
 				xScr += (xMouseDown - e.getX());
 				yScr += (yMouseDown - e.getY());
+				
+				if (rerenderOnMove)
+					repaint();
 				
 				xMouseDown = e.getX();
 				yMouseDown = e.getY();
