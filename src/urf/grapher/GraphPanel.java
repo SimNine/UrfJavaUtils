@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import urf.Pair;
 
 @SuppressWarnings("serial")
-public class GraphPanel extends JPanel {
+public class GraphPanel extends JPanel implements MouseMotionListener, KeyListener {
 	HashMap<String, GraphDataset> dataSets = new HashMap<String, GraphDataset>();
 	HashSet<Integer> keys = new HashSet<Integer>();
 
@@ -34,80 +34,79 @@ public class GraphPanel extends JPanel {
 	public GraphPanel() {
 		this.setFocusable(true);
 		this.requestFocusInWindow();
+	}
+	
+	/*
+	 * Listeners
+	 */
+	@Override
+	public void keyPressed(KeyEvent e) {
+		keys.add(e.getKeyCode());
+
+		double xDist = Math.abs(xMax - xMin)*0.05 + 1;
+		double yDist = Math.abs(yMax - yMin)*0.05 + 1;
 		
-		addMouseMotionListener(new MouseMotionListener() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_R:
+			resetGraph();
+			break;
+		case KeyEvent.VK_RIGHT:
+			xMin += xDist;
+			xMax += xDist;
+			break;
+		case KeyEvent.VK_LEFT:
+			xMin -= xDist;
+			xMax -= xDist;
+			break;
+		case KeyEvent.VK_DOWN:
+			yMin -= yDist;
+			yMax -= yDist;
+			break;
+		case KeyEvent.VK_UP:
+			yMin += yDist;
+			yMax += yDist;
+			break;
+		case KeyEvent.VK_W: // increase y-zoom
+			if (yDist*20 > 5) {
+				yMin += yDist;
+				yMax -= yDist;
 			}
-
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				xMousePos = e.getX();
-				yMousePos = e.getY();
-				repaint();
+			break;
+		case KeyEvent.VK_S: // decrease y-zoom
+			yMin -= yDist;
+			yMax += yDist;
+			break;
+		case KeyEvent.VK_D: // increase x-zoom
+			if (xDist*20 > 5) {
+				xMin += xDist;
+				xMax -= xDist;
 			}
-		});
+			break;
+		case KeyEvent.VK_A: // decrease x-zoom
+			xMin -= xDist;
+			xMax += xDist;
+			break;
+		}
 		
-		addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-				keys.add(e.getKeyCode());
+		repaint();
+	}
 
-				double xDist = Math.abs(xMax - xMin)*0.05 + 1;
-				double yDist = Math.abs(yMax - yMin)*0.05 + 1;
-				
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_R:
-					resetGraph();
-					break;
-				case KeyEvent.VK_RIGHT:
-					xMin += xDist;
-					xMax += xDist;
-					break;
-				case KeyEvent.VK_LEFT:
-					xMin -= xDist;
-					xMax -= xDist;
-					break;
-				case KeyEvent.VK_DOWN:
-					yMin -= yDist;
-					yMax -= yDist;
-					break;
-				case KeyEvent.VK_UP:
-					yMin += yDist;
-					yMax += yDist;
-					break;
-				case KeyEvent.VK_W: // increase y-zoom
-					if (yDist*20 > 5) {
-						yMin += yDist;
-						yMax -= yDist;
-					}
-					break;
-				case KeyEvent.VK_S: // decrease y-zoom
-					yMin -= yDist;
-					yMax += yDist;
-					break;
-				case KeyEvent.VK_D: // increase x-zoom
-					if (xDist*20 > 5) {
-						xMin += xDist;
-						xMax -= xDist;
-					}
-					break;
-				case KeyEvent.VK_A: // decrease x-zoom
-					xMin -= xDist;
-					xMax += xDist;
-					break;
-				}
-				
-				repaint();
-			}
+	@Override
+	public void keyReleased(KeyEvent e) {
+		keys.remove(e.getKeyCode());
+	}
 
-			public void keyReleased(KeyEvent e) {
-				keys.remove(e.getKeyCode());
-			}
+	@Override
+	public void keyTyped(KeyEvent e) {}
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {}
 
-			public void keyTyped(KeyEvent e) {}
-		});
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		xMousePos = e.getX();
+		yMousePos = e.getY();
+		repaint();
 	}
 	
 	/*
