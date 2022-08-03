@@ -20,9 +20,9 @@ public class GraphPanel extends PannablePanel
 	HashSet<Integer> keys = new HashSet<Integer>();
 
 	double xMin = -1;
-	double xMax = 5;
+	double xDim = 5;
 	double yMin = -1;
-	double yMax = 5;
+	double yDim = 5;
 	
 	int xMousePos = 0;
 	int yMousePos = 0;
@@ -45,34 +45,34 @@ public class GraphPanel extends PannablePanel
 	public void keyPressed(KeyEvent e) {
 		keys.add(e.getKeyCode());
 		
-		double xDist = Math.abs(xMax - xMin)*0.05 + 1;
-		double yDist = Math.abs(yMax - yMin)*0.05 + 1;
-		
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_R:
-			resetGraph();
-			break;
-		case KeyEvent.VK_W: // increase y-zoom
-			if (yDist*20 > 5) {
-				yMin += yDist;
-				yMax -= yDist;
-			}
-			break;
-		case KeyEvent.VK_S: // decrease y-zoom
-			yMin -= yDist;
-			yMax += yDist;
-			break;
-		case KeyEvent.VK_D: // increase x-zoom
-			if (xDist*20 > 5) {
-				xMin += xDist;
-				xMax -= xDist;
-			}
-			break;
-		case KeyEvent.VK_A: // decrease x-zoom
-			xMin -= xDist;
-			xMax += xDist;
-			break;
-		}
+//		double xDist = Math.abs(xMax - xMin)*0.05 + 1;
+//		double yDist = Math.abs(yMax - yMin)*0.05 + 1;
+//		
+//		switch (e.getKeyCode()) {
+//		case KeyEvent.VK_R:
+//			resetGraph();
+//			break;
+//		case KeyEvent.VK_W: // increase y-zoom
+//			if (yDist*20 > 5) {
+//				yMin += yDist;
+//				yMax -= yDist;
+//			}
+//			break;
+//		case KeyEvent.VK_S: // decrease y-zoom
+//			yMin -= yDist;
+//			yMax += yDist;
+//			break;
+//		case KeyEvent.VK_D: // increase x-zoom
+//			if (xDist*20 > 5) {
+//				xMin += xDist;
+//				xMax -= xDist;
+//			}
+//			break;
+//		case KeyEvent.VK_A: // decrease x-zoom
+//			xMin -= xDist;
+//			xMax += xDist;
+//			break;
+//		}
 		
 		repaint();
 	}
@@ -155,12 +155,11 @@ public class GraphPanel extends PannablePanel
 	
 	private void drawScale(Graphics g) {
 		// draw vertical scale
-		double yRange = (int)(yMax - yMin);
-		int yIntervalOrderOfMagnitude = (int)Math.log10(yRange) - 1;
+		int yIntervalOrderOfMagnitude = (int)Math.log10(yDim) - 1;
 		if (yIntervalOrderOfMagnitude < 0)
 			yIntervalOrderOfMagnitude = 0;
 		int yIntervalSize = (int)Math.pow(10, yIntervalOrderOfMagnitude);
-		int yNumMarkers = ((int)(yRange / yIntervalSize) + 1) * 3;
+		int yNumMarkers = ((int)(yDim / yIntervalSize) + 1) * 3;
 		int yLowestScaleMarker = (int) (yMin - (yMin % yIntervalSize)) - 
 				((yNumMarkers / 3) * yIntervalSize);
 
@@ -175,12 +174,11 @@ public class GraphPanel extends PannablePanel
 		}
 		
 		// draw horizontal scale
-		double xRange = (int)(xMax - xMin);
-		int xIntervalOrderOfMagnitude = (int)Math.log10(xRange) - 1;
+		int xIntervalOrderOfMagnitude = (int)Math.log10(xDim) - 1;
 		if (xIntervalOrderOfMagnitude < 0)
 			xIntervalOrderOfMagnitude = 0;
 		int xIntervalSize = (int)Math.pow(10, xIntervalOrderOfMagnitude);
-		int xNumMarkers = ((int)(xRange / xIntervalSize) + 1) * 3;
+		int xNumMarkers = ((int)(xDim / xIntervalSize) + 1) * 3;
 		int xLowestScaleMarker = (int) (xMin - (xMin % xIntervalSize)) - 
 				((xNumMarkers / 3) * xIntervalSize);
 
@@ -247,15 +245,16 @@ public class GraphPanel extends PannablePanel
 		}
 
 		xMin = minX - 1;
-		xMax = maxX + 1;
+		xDim = (maxX - minX) + 2;
 		yMin = minY - 1;
-		yMax = maxY + 1;
+		yDim = (maxY - minY) + 2;
 	}
 
 	// check to see if this
 	@SuppressWarnings("unused")
 	private boolean isOnscreen(double x, double y) {
-		if (x < xMin || x > xMax || y < yMin || y > yMax)
+		if (x < xMin || x > (xMin + xDim) || 
+			y < yMin || y > (yMin + yDim))
 			return false;
 		else
 			return true;
@@ -263,14 +262,11 @@ public class GraphPanel extends PannablePanel
 
 	// converts a data coord to a graphics coord
 	private int[] pointToScreen(double x, double y) {
-		double w = xMax - xMin;
-		double h = yMax - yMin;
-
 		double xDisp = x - xMin;
 		double yDisp = y - yMin;
 
-		int xPos = (int) ((xDisp / w) * (this.getWidth() * xScl));
-		int yPos = (int)(this.getHeight() * yScl) - (int)((yDisp / h) * (this.getHeight() * yScl));
+		int xPos = (int) ((xDisp / xDim) * (this.getWidth() * xScl));
+		int yPos = (int)(this.getHeight() * yScl) - (int)((yDisp / yDim) * (this.getHeight() * yScl));
 
 		int[] ret = new int[2];
 		ret[0] = xPos;
@@ -280,15 +276,15 @@ public class GraphPanel extends PannablePanel
 	
 	// converts a graphics coord to an (approximate) data coord
 	private double[] screenToPoint(int x, int y) {
-		double xPct = ((double)x)/((double)this.getWidth() * xScl);
-		double yPct = ((double)y)/((double)this.getHeight() * yScl);
+		double xPct = ((double)x)/((double)this.getWidth());
+		double yPct = ((double)y)/((double)this.getHeight());
 		
-		double w = (xMax - xMin)*xScl;
-		double h = (yMax - yMin)*yScl;
+		double w = xDim * xScl;
+		double h = yDim * yScl;
 		
 		double[] ret = new double[2];
 		ret[0] = xMin + w*xPct + xScr;
-		ret[1] = yMax - h*yPct - yScr;
+		ret[1] = (yMin + yDim) - h*yPct - yScr;
 		return ret;
 	}
 
@@ -297,15 +293,15 @@ public class GraphPanel extends PannablePanel
 		if (dataSets.containsKey(setID)) {
 			dataSets.get(setID).addPoint(x, y);
 			
-			if (x > xMax - 1)
-				xMax = x + 1;
+			if (x > (xMin + xDim) - 1)
+				setXBounds(xMin, x + 1);
 			else if (x < xMin + 1)
-				xMin = x - 1;
+				setXBounds(x - 1, (xMin + xDim));
 			
-			if (y > yMax - 1)
-				yMax = y + 1;
+			if (y > (yMin + yDim) - 1)
+				setYBounds(yMin, y + 1);
 			else if (y < yMin + 1)
-				yMin = y - 1;
+				setYBounds(y - 1, (yMin + yDim));
 			
 			repaint();
 		} else {
@@ -332,12 +328,12 @@ public class GraphPanel extends PannablePanel
 	 */
 	public void setXBounds(double min, double max) {
 		xMin = min;
-		xMax = max;
+		xDim = (max - min);
 	}
 
 	public void setYBounds(double min, double max) {
 		yMin = min;
-		yMax = max;
+		yDim = (max - min);
 	}
 	
 	public GraphDataset getDataset(String setID) {
