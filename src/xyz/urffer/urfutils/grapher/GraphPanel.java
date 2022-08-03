@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import javax.swing.JPanel;
-
 import xyz.urffer.urfutils.Pair;
+import xyz.urffer.urfutils.pannablepanel.PannablePanel;
 
 @SuppressWarnings("serial")
-public class GraphPanel extends JPanel implements MouseMotionListener, KeyListener {
+public class GraphPanel extends PannablePanel 
+	implements MouseMotionListener, KeyListener {
 	HashMap<String, GraphDataset> dataSets = new HashMap<String, GraphDataset>();
 	HashSet<Integer> keys = new HashSet<Integer>();
 
@@ -23,17 +23,19 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 	double xMax = 5;
 	double yMin = -1;
 	double yMax = 5;
-
-	double xStep = 1.0;
-	double yStep = 1.0;
 	
 	int xMousePos = 0;
 	int yMousePos = 0;
 
 	// modified default constructor
 	public GraphPanel() {
+		super(0, 0, true);
+		
 		this.setFocusable(true);
 		this.requestFocusInWindow();
+		
+		this.addKeyListener(this);
+		this.addMouseMotionListener(this);
 	}
 	
 	/*
@@ -42,29 +44,13 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 	@Override
 	public void keyPressed(KeyEvent e) {
 		keys.add(e.getKeyCode());
-
+		
 		double xDist = Math.abs(xMax - xMin)*0.05 + 1;
 		double yDist = Math.abs(yMax - yMin)*0.05 + 1;
 		
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_R:
 			resetGraph();
-			break;
-		case KeyEvent.VK_RIGHT:
-			xMin += xDist;
-			xMax += xDist;
-			break;
-		case KeyEvent.VK_LEFT:
-			xMin -= xDist;
-			xMax -= xDist;
-			break;
-		case KeyEvent.VK_DOWN:
-			yMin -= yDist;
-			yMax -= yDist;
-			break;
-		case KeyEvent.VK_UP:
-			yMin += yDist;
-			yMax += yDist;
 			break;
 		case KeyEvent.VK_W: // increase y-zoom
 			if (yDist*20 > 5) {
@@ -143,8 +129,8 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 		}
 
 		g.setColor(Color.BLACK);
-		g.drawLine(0, axisPos[1], getWidth(), axisPos[1]); // x-axis
-		g.drawLine(axisPos[0], 0, axisPos[0], getHeight()); // y-axis
+		g.drawLine(0, axisPos[1] - this.yScr, getWidth(), axisPos[1] - this.yScr); // x-axis
+		g.drawLine(axisPos[0] - this.xScr, 0, axisPos[0] - this.xScr, getHeight()); // y-axis
 	}
 	
 	private void drawPoints(Graphics g) {
@@ -160,8 +146,9 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 				int[] currPos = pointToScreen(curr.a, curr.b);
 				int[] nextPos = pointToScreen(next.a, next.b);
 
-				g.drawRect(currPos[0] - 1, currPos[1] - 1, 3, 3);
-				g.drawLine(currPos[0], currPos[1], nextPos[0], nextPos[1]);
+				g.drawRect(currPos[0] - 1 - xScr, currPos[1] - 1 - yScr, 3, 3);
+				g.drawLine(currPos[0] - xScr, currPos[1] - yScr, 
+						   nextPos[0] - xScr, nextPos[1] - yScr);
 			}
 		}
 	}
@@ -173,15 +160,18 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 		if (yIntervalOrderOfMagnitude < 0)
 			yIntervalOrderOfMagnitude = 0;
 		int yIntervalSize = (int)Math.pow(10, yIntervalOrderOfMagnitude);
-		int yLowestScaleMarker = (int) (yMin - (yMin % yIntervalSize));
-		int yNumMarkers = (int)(yRange / yIntervalSize) + 1;
+		int yNumMarkers = ((int)(yRange / yIntervalSize) + 1) * 3;
+		int yLowestScaleMarker = (int) (yMin - (yMin % yIntervalSize)) - 
+				((yNumMarkers / 3) * yIntervalSize);
 
 		g.setColor(Color.BLACK);
 		for (int i = 0; i < yNumMarkers; i++) {
 			int yTickCoord = yLowestScaleMarker + i*yIntervalSize;
 			int[] tickpos = pointToScreen(0, yTickCoord);
-			g.drawLine(tickpos[0] - 5, tickpos[1], tickpos[0] + 5, tickpos[1]);
-			g.drawString("" + yTickCoord, tickpos[0] - 20, tickpos[1] + 8);
+			g.drawLine(tickpos[0] - 5 - xScr, tickpos[1] - yScr, 
+					   tickpos[0] + 5 - xScr, tickpos[1] - yScr);
+			g.drawString("" + yTickCoord, 
+						 tickpos[0] - 20 - xScr, tickpos[1] + 8 - yScr);
 		}
 		
 		// draw horizontal scale
@@ -190,15 +180,18 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 		if (xIntervalOrderOfMagnitude < 0)
 			xIntervalOrderOfMagnitude = 0;
 		int xIntervalSize = (int)Math.pow(10, xIntervalOrderOfMagnitude);
-		int xLowestScaleMarker = (int) (xMin - (xMin % xIntervalSize));
-		int xNumMarkers = (int)(xRange / xIntervalSize) + 1;
+		int xNumMarkers = ((int)(xRange / xIntervalSize) + 1) * 3;
+		int xLowestScaleMarker = (int) (xMin - (xMin % xIntervalSize)) - 
+				((xNumMarkers / 3) * xIntervalSize);
 
 		g.setColor(Color.BLACK);
 		for (int i = 0; i < xNumMarkers; i++) {
 			int xTickCoord = xLowestScaleMarker + i*xIntervalSize;
 			int[] tickpos = pointToScreen(xTickCoord, 0);
-			g.drawLine(tickpos[0], tickpos[1] - 5, tickpos[0], tickpos[1] + 5);
-			g.drawString("" + xTickCoord, tickpos[0] - 20, tickpos[1] + 8);
+			g.drawLine(tickpos[0] - xScr, tickpos[1] - 5 - yScr, 
+					   tickpos[0] - xScr, tickpos[1] + 5 - yScr);
+			g.drawString("" + xTickCoord, 
+						 tickpos[0] - 20 - xScr, tickpos[1] + 8 - yScr);
 		}
 	}
 	
@@ -276,8 +269,8 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 		double xDisp = x - xMin;
 		double yDisp = y - yMin;
 
-		int xPos = (int) ((xDisp / w) * (this.getWidth()));
-		int yPos = this.getHeight() - (int) ((yDisp / h) * (this.getHeight()));
+		int xPos = (int) ((xDisp / w) * (this.getWidth() * xScl));
+		int yPos = (int)(this.getHeight() * yScl) - (int)((yDisp / h) * (this.getHeight() * yScl));
 
 		int[] ret = new int[2];
 		ret[0] = xPos;
@@ -287,15 +280,15 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 	
 	// converts a graphics coord to an (approximate) data coord
 	private double[] screenToPoint(int x, int y) {
-		double xPct = ((double)x)/((double)this.getWidth());
-		double yPct = ((double)y)/((double)this.getHeight());
+		double xPct = ((double)x)/((double)this.getWidth() * xScl);
+		double yPct = ((double)y)/((double)this.getHeight() * yScl);
 		
-		double w = xMax - xMin;
-		double h = yMax - yMin;
+		double w = (xMax - xMin)*xScl;
+		double h = (yMax - yMin)*yScl;
 		
 		double[] ret = new double[2];
-		ret[0] = xMin + w*xPct;
-		ret[1] = yMax - h*yPct;
+		ret[0] = xMin + w*xPct + xScr;
+		ret[1] = yMax - h*yPct - yScr;
 		return ret;
 	}
 
@@ -342,17 +335,9 @@ public class GraphPanel extends JPanel implements MouseMotionListener, KeyListen
 		xMax = max;
 	}
 
-	public void setXStep(double step) {
-		xStep = step;
-	}
-
 	public void setYBounds(double min, double max) {
 		yMin = min;
 		yMax = max;
-	}
-
-	public void setYStep(double step) {
-		yStep = step;
 	}
 	
 	public GraphDataset getDataset(String setID) {
