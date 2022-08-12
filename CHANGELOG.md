@@ -19,6 +19,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - A subclass of JPanel that is pannable
 - A grapher with support for multiple datasets, colors, panning, viewing styles
 
+### Removed
+- Removed unit tests (for now)
+
 [UrfJavaUtils]: https://github.com/SimNine/UrfJavaUtils
 
 [Unreleased]: https://github.com/SimNine/GeneTrees-v2/compare/v0.7.0...HEAD
