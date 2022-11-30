@@ -11,6 +11,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 - Nothing yet
 
+## [0.2.0]
+
+### Added
+- Numerical pair classes originally from UrfQuest (PairInt, PairDouble)
+	- Pairs can be added, subtracted, multiplied, divided, and modulo'd from each other
+	- Pairs can be converted from Int to Double, or reverse
+	- Pairs can be checked for equality
+
 ## [0.1.1] - 2022-08-12
 
 ### Fixed
@@ -31,7 +39,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Removed
 - Removed unit tests (for now)
 
-[Unreleased]: https://github.com/SimNine/UrfJavaUtils/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/SimNine/UrfJavaUtils/compare/v0.2.0...HEAD
 
+[0.2.0]: https://github.com/SimNine/UrfJavaUtils/commits/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/SimNine/UrfJavaUtils/commits/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/SimNine/UrfJavaUtils/commits/v0.1.0
